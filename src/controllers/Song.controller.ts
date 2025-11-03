@@ -3,6 +3,8 @@ import { Request, Response, NextFunction } from 'express';
 import { Song } from '../models/Song.model';
 import { logger } from '../utils/logger';
 import { getDeezerTracksByGenre } from '../services/Deezer/Deezer.service';
+import fetch from 'node-fetch';
+import { Readable } from 'stream';
 
 export class SongController {
   /**

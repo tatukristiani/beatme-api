@@ -70,10 +70,26 @@ SongSchema.statics.addSongs = async function (
   const bulkOps = songs.map((song) => ({
     updateOne: {
       filter: { songId: song.songId },
-      update: { $setOnInsert: song },
+      update: {
+        // Always update these fields
+        $set: {
+          title: song.title,
+          artist: song.artist,
+          audioUrl: song.audioUrl, // 🔥 ensures fresh URL each time
+          albumCover: song.albumCover,
+          genre: song.genre,
+          duration: song.duration,
+          year: song.year,
+        },
+        // Only insert if new
+        $setOnInsert: {
+          createdAt: new Date(),
+        },
+      },
       upsert: true,
     },
   }));
+
   await this.bulkWrite(bulkOps);
   const songIds = songs.map((s) => s.songId);
   return this.find({ songId: { $in: songIds } });
