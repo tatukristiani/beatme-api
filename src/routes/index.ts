@@ -36,13 +36,6 @@ router.post(
 // Song routes
 router.get('/songs', songController.getSongs.bind(songController));
 router.get('/songs/:id', songController.getSong.bind(songController));
-router.post(
-  '/songs',
-  validate(createSongSchema),
-  songController.createSong.bind(songController),
-);
-router.post('/songs/bulk', songController.createBulkSongs.bind(songController));
-
 router.get('/deezer/songs', songController.fetchSongsFromDeezer.bind(songController));
 
 export default router;

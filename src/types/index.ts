@@ -1,5 +1,3 @@
-// src/types/index.ts
-
 export interface GameSettings {
   creatorName: string;
   timePerSong: number;
