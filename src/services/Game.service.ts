@@ -28,6 +28,7 @@ export class GameService {
     // Fetch songs from Deezer
     const songLimit = parseInt(settings.songCount as unknown as string, 10);
     const individualGenres = settings.genres;
+    const years = settings.years;
     const genreSongLimit = Math.ceil(songLimit / individualGenres.length);
     let songs: any[] = [];
 
@@ -36,6 +37,7 @@ export class GameService {
       const genreSongs = await getDeezerTracksByGenre(
         genre as string,
         genreSongLimit as unknown as number,
+        years as string[],
       );
       songs = songs.concat(genreSongs);
     }

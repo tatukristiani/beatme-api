@@ -118,7 +118,7 @@ export class SongController {
 
   /**
    * GET /deezer/songs
-   * Fetch songs from Deezer based on genre
+   * Fetch songs from Deezer based on genre and year
    * Query params: genres and limit
    */
   async fetchSongsFromDeezer(
@@ -127,7 +127,7 @@ export class SongController {
     next: NextFunction,
   ): Promise<void> {
     try {
-      const { genres, limit } = req.query;
+      const { genres, limit, years } = req.query;
       if (!genres) {
         res.status(400).json({
           success: false,
@@ -150,6 +150,7 @@ export class SongController {
         const genreSongs = await getDeezerTracksByGenre(
           genre as string,
           genreSongLimit as unknown as number,
+          years as string[],
         );
         songs = songs.concat(genreSongs);
       }

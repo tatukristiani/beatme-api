@@ -1,16 +1,7 @@
 // deezerService.ts
 import fetch from 'node-fetch';
 import { logger } from '../../utils/logger';
-
-interface DeezerTrack {
-  id: number;
-  title: string;
-  artist: string;
-  album: string;
-  preview_url: string;
-  release_date: string;
-  cover: string;
-}
+import { Song } from '../../types';
 
 /*
  Possible genres from Deezer API:
@@ -27,7 +18,8 @@ interface DeezerTrack {
 export async function getDeezerTracksByGenre(
   genre: string,
   limit: number,
-): Promise<DeezerTrack[]> {
+  years: string[],
+): Promise<any[]> {
   // Fetch genres to get genre ID
   const res = await fetch('https://api.deezer.com/genre');
   const genresJson: any = await res.json();
@@ -38,12 +30,35 @@ export async function getDeezerTracksByGenre(
   // Fetch top tracks for the genre
   const genreId = genreObj.id;
   const tracksRes = await fetch(
-    `https://api.deezer.com/chart/${genreId}/tracks?limit=${limit}`,
+    `https://api.deezer.com/chart/${genreId}/tracks?limit=1000`,
   );
   const tracksJson: any = await tracksRes.json();
+  const shuffledTracks = tracksJson.data.sort(() => Math.random() - 0.5);
+  const minYear = Math.min(...years.map(Number));
+  const maxYear = Math.max(...years.map(Number));
+  const finalTracks: any[] = [];
+
+  for (const track of shuffledTracks) {
+    try {
+      // fetch album info to get release date
+      const res = await fetch(`https://api.deezer.com/album/${track.album.id}`);
+      const album: any = await res.json();
+
+      const releaseYear = new Date(album.release_date).getFullYear();
+
+      if (releaseYear >= minYear && releaseYear <= maxYear) {
+        finalTracks.push({ ...track, release_date: album.release_date });
+
+        // ✅ Stop early if enough matches found
+        if (finalTracks.length >= limit) break;
+      }
+    } catch (err) {
+      logger.error(`Error fetching album for track ${track.id}:`, err);
+    }
+  }
 
   // Convert to Song format
-  const songs = tracksJson.data.map((song: any) => {
+  const songs: any[] = finalTracks.map((song: any) => {
     return {
       songId: song.id,
       title: song.title,
@@ -52,7 +67,7 @@ export async function getDeezerTracksByGenre(
       audioUrl: song.preview,
       duration: song.duration,
       genre: genreObj.name,
-      year: 0,
+      year: song.release_year,
     };
   });
 
